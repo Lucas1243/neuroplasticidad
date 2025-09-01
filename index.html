@@ -46,7 +46,7 @@
     }
 
     function checkAnswer() {
-      let respuesta = document.getElementById("respuesta").value.trim().split(" ").map(Number);
+      let respuesta = document.getElementById("respuesta").value.trim().split("").map(Number);
       let correcta = (modo === "directo") ? currentSequence : [...currentSequence].reverse();
 
       if (JSON.stringify(respuesta) === JSON.stringify(correcta)) {
