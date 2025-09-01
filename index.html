@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Test de Dígitos</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; padding: 40px; }
     #sequence { font-size: 2em; margin: 20px; font-weight: bold; }
     input, button { padding: 10px; font-size: 1em; margin: 10px; }
     .hidden { display: none; }
-    #historial { text-align: left; max-width: 700px; margin: 30px auto; }
+    #historial { max-width: 700px; margin: 30px auto; text-align: left; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     th { background-color: #f2f2f2; }
@@ -16,6 +16,7 @@
 </head>
 <body>
   <h1>Test de Dígitos (Digit Span)</h1>
+
   <button onclick="startTest('directo')">Comenzar Dígitos Directo</button>
   <button onclick="startTest('inverso')">Comenzar Dígitos Inverso</button>
   <button id="btnFinalizar" class="hidden" onclick="finalizarTest()">Finalizar Test</button>
@@ -24,7 +25,7 @@
 
   <div id="inputArea" class="hidden">
     <p id="instrucciones"></p>
-    <input type="text" id="respuesta" placeholder="Escribe la secuencia">
+    <input type="text" id="respuesta" placeholder="Escribe la secuencia" autocomplete="off" />
     <button onclick="checkAnswer()">Enviar</button>
   </div>
 
@@ -47,125 +48,136 @@
     </table>
   </div>
 
-  <script>
-    let currentSequence = [];
-    let modo = "directo";
-    let nivel = 4;
-    let score = 0;
-    let historial = [];
-    let testActivo = false;
+<script>
+  let currentSequence = [];
+  let modo = "directo";
+  let nivel = 4;
+  let score = 0;
+  let historial = [];
+  let testActivo = false;
+  let timeoutId = null;
 
-    function generarSecuencia(longitud) {
-      let seq = [];
-      for (let i = 0; i < longitud; i++) {
-        seq.push(Math.floor(Math.random() * 9) + 1);
-      }
-      return seq;
+  function generarSecuencia(longitud) {
+    let seq = [];
+    for (let i = 0; i < longitud; i++) {
+      seq.push(Math.floor(Math.random() * 9) + 1);
     }
+    return seq;
+  }
 
-    function startTest(tipo) {
-      modo = tipo;
-      nivel = 4;
-      score = 0;
-      historial = [];
-      testActivo = true;
-      document.getElementById("historial").classList.add("hidden");
-      document.getElementById("tablaHistorial").innerHTML = "";
-      document.getElementById("scoreDisplay").textContent = "";
-      document.getElementById("resultado").textContent = "";
-      document.getElementById("btnFinalizar").classList.remove("hidden");
-      nextLevel();
-    }
+  function startTest(tipo) {
+    modo = tipo;
+    nivel = 4;
+    score = 0;
+    historial = [];
+    testActivo = true;
+    clearTimeout(timeoutId);
 
-    function nextLevel() {
-      if (!testActivo) return;
+    document.getElementById("historial").classList.add("hidden");
+    document.getElementById("tablaHistorial").innerHTML = "";
+    document.getElementById("scoreDisplay").textContent = "";
+    document.getElementById("resultado").textContent = "";
+    document.getElementById("btnFinalizar").classList.remove("hidden");
 
-      currentSequence = generarSecuencia(nivel);
-      document.getElementById("sequence").textContent = currentSequence.join(" ");
-      document.getElementById("sequence").classList.remove("hidden");
-      document.getElementById("inputArea").classList.add("hidden");
-      document.getElementById("respuesta").value = "";
+    nextLevel();
+  }
 
-      let tiempoMostrar = nivel * 1000;
+  function nextLevel() {
+    if (!testActivo) return;
 
-      setTimeout(() => {
-        document.getElementById("sequence").classList.add("hidden");
-        document.getElementById("inputArea").classList.remove("hidden");
-        document.getElementById("instrucciones").textContent =
-          (modo === "directo") ?
-          "Escribe los números en el mismo orden:" :
-          "Escribe los números en orden inverso:";
-      }, tiempoMostrar);
-    }
+    currentSequence = generarSecuencia(nivel);
+    document.getElementById("sequence").textContent = currentSequence.join(" ");
+    document.getElementById("sequence").classList.remove("hidden");
+    document.getElementById("inputArea").classList.add("hidden");
+    document.getElementById("respuesta").value = "";
 
-    function checkAnswer() {
-      if (!testActivo) return;
+    const tiempoMostrar = nivel * 1000;
 
-      let input = document.getElementById("respuesta").value.trim();
-      input = input.replace(/\s+/g, '');
-      let respuestaUsuario = input.split('').map(Number);
-
-      let secuenciaCorrecta = (modo === "directo")
-        ? currentSequence
-        : [...currentSequence].reverse();
-
-      let esCorrecto = (
-        respuestaUsuario.length === secuenciaCorrecta.length &&
-        respuestaUsuario.every((num, i) => num === secuenciaCorrecta[i])
-      );
-
-      if (esCorrecto) score++;
-
-      historial.push({
-        nivel: nivel,
-        modo: modo,
-        generado: currentSequence.slice(),
-        respuesta: respuestaUsuario.slice(),
-        correcto: esCorrecto
-      });
-
-      document.getElementById("resultado").textContent = esCorrecto
-        ? `✅ Correcto (Puntaje: ${score})`
-        : `❌ Incorrecto. Era: ${secuenciaCorrecta.join(" ")} (Puntaje: ${score})`;
-
-      actualizarHistorial();
-      nivel++;
-
-      setTimeout(() => {
-        if (testActivo) {
-          document.getElementById("resultado").textContent = "";
-          nextLevel();
-        }
-      }, 2000);
-    }
-
-    function finalizarTest() {
-      testActivo = false;
+    timeoutId = setTimeout(() => {
       document.getElementById("sequence").classList.add("hidden");
-      document.getElementById("inputArea").classList.add("hidden");
-      document.getElementById("resultado").textContent = `✅ Test finalizado. Puntaje final: ${score}`;
-      document.getElementById("scoreDisplay").textContent = `Puntaje final: ${score}`;
-      document.getElementById("historial").classList.remove("hidden");
-      document.getElementById("btnFinalizar").classList.add("hidden");
-    }
+      document.getElementById("inputArea").classList.remove("hidden");
+      document.getElementById("instrucciones").textContent =
+        modo === "directo"
+          ? "Escribe los números en el mismo orden:"
+          : "Escribe los números en orden inverso:";
+      document.getElementById("respuesta").focus();
+    }, tiempoMostrar);
+  }
 
-    function actualizarHistorial() {
-      document.getElementById("scoreDisplay").textContent = `Puntaje actual: ${score}`;
-      document.getElementById("historial").classList.remove("hidden");
+  function checkAnswer() {
+    if (!testActivo) return;
 
-      let tabla = document.getElementById("tablaHistorial");
-      let ultima = historial[historial.length - 1];
+    clearTimeout(timeoutId);
 
+    let input = document.getElementById("respuesta").value.trim();
+    input = input.replace(/\s+/g, ''); // eliminar espacios internos
+    let respuestaUsuario = input.split('').map(Number);
+
+    let secuenciaCorrecta =
+      modo === "directo" ? currentSequence : [...currentSequence].reverse();
+
+    let esCorrecto =
+      respuestaUsuario.length === secuenciaCorrecta.length &&
+      respuestaUsuario.every((num, i) => num === secuenciaCorrecta[i]);
+
+    if (esCorrecto) score++;
+
+    historial.push({
+      nivel: nivel,
+      modo: modo,
+      generado: currentSequence.slice(),
+      respuesta: respuestaUsuario.slice(),
+      correcto: esCorrecto,
+    });
+
+    document.getElementById("resultado").textContent = esCorrecto
+      ? `✅ Correcto (Puntaje: ${score})`
+      : `❌ Incorrecto. Era: ${secuenciaCorrecta.join(" ")} (Puntaje: ${score})`;
+
+    actualizarHistorial();
+    nivel++;
+
+    timeoutId = setTimeout(() => {
+      if (testActivo) {
+        document.getElementById("resultado").textContent = "";
+        nextLevel();
+      }
+    }, 2000);
+  }
+
+  function finalizarTest() {
+    testActivo = false;
+    clearTimeout(timeoutId);
+    document.getElementById("sequence").classList.add("hidden");
+    document.getElementById("inputArea").classList.add("hidden");
+    document.getElementById("resultado").textContent = `✅ Test finalizado. Puntaje final: ${score}`;
+    document.getElementById("scoreDisplay").textContent = `Puntaje final: ${score}`;
+    document.getElementById("historial").classList.remove("hidden");
+    document.getElementById("btnFinalizar").classList.add("hidden");
+  }
+
+  function actualizarHistorial() {
+    document.getElementById("scoreDisplay").textContent = `Puntaje actual: ${score}`;
+    document.getElementById("historial").classList.remove("hidden");
+
+    let tabla = document.getElementById("tablaHistorial");
+
+    // Limpiamos para evitar duplicados
+    tabla.innerHTML = "";
+
+    historial.forEach((item) => {
       let fila = document.createElement("tr");
       fila.innerHTML = `
-        <td>${ultima.nivel}</td>
-        <td>${ultima.modo}</td>
-        <td>${ultima.generado.join(" ")}</td>
-        <td>${ultima.respuesta.join(" ")}</td>
-        <td>${ultima.correcto ? "✅" : "❌"}</td>
+        <td>${item.nivel}</td>
+        <td>${item.modo}</td>
+        <td>${item.generado.join(" ")}</td>
+        <td>${item.respuesta.join(" ")}</td>
+        <td>${item.correcto ? "✅" : "❌"}</td>
       `;
       tabla.appendChild(fila);
-    }
-  </script>
+    });
+  }
+</script>
+
 </body>
 </html>
