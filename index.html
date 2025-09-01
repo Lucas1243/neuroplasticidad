@@ -3,7 +3,304 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test de Dígitos</title<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Test de Dígitos</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 20px;
+    }
+    #sequence {
+      font-size: 2.5em;
+      margin: 20px 0;
+      font-weight: bold;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+    }
+    input, button {
+      padding: 15px;
+      font-size: 1.2em;
+      margin: 10px 0;
+      width: 90%;
+      max-width: 400px;
+      box-sizing: border-box;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    button:disabled {
+      background-color: #888;
+      cursor: not-allowed;
+    }
+    button:hover:enabled {
+      background-color: #0056b3;
+    }
+    .hidden {
+      display: none;
+    }
+    #historial {
+      max-width: 700px;
+      margin: 30px auto;
+      text-align: left;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      min-width: 400px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+      font-size: 0.9em;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 15px;
+      }
+      h1 {
+        font-size: 2em;
+      }
+      #sequence {
+        font-size: 2em;
+      }
+      input, button {
+        font-size: 1.4em;
+        padding: 18px;
+        width: 100%;
+      }
+      th, td {
+        font-size: 1em;
+        padding: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Test de Dígitos (Digit Span)</h1>
+
+  <button onclick="startTest('directo')">Comenzar Dígitos Directo</button>
+  <button onclick="startTest('inverso')">Comenzar Dígitos Inverso</button>
+  <button id="btnFinalizar" class="hidden" onclick="finalizarTest()">Finalizar Test</button>
+
+  <div id="sequence" class="hidden"></div>
+
+  <div id="inputArea" class="hidden">
+    <p id="instrucciones"></p>
+    <input type="text" id="respuesta" placeholder="Escribe la secuencia" autocomplete="off" />
+    <button id="btnEnviar" onclick="checkAnswer()">Enviar</button>
+  </div>
+
+  <p id="resultado"></p>
+  <p id="scoreDisplay" class="hidden"></p>
+
+  <div id="historial" class="hidden">
+    <h2>Historial</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nivel</th>
+          <th>Modo</th>
+          <th>Secuencia Generada</th>
+          <th>Tu Respuesta</th>
+          <th>Correcto</th>
+        </tr>
+      </thead>
+      <tbody id="tablaHistorial"></tbody>
+    </table>
+  </div>
+
+<script>
+  let currentSequence = [];
+  let modo = "directo";
+  let nivel = 4;
+  let score = 0;
+  let historial = [];
+  let testActivo = false;
+  let timeoutId = null;
+  let intentoRepetido = false;
+
+  function generarSecuencia(longitud) {
+    let seq = [];
+    for (let i = 0; i < longitud; i++) {
+      seq.push(Math.floor(Math.random() * 9) + 1);
+    }
+    return seq;
+  }
+
+  function arraysIguales(a, b) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+
+  function startTest(tipo) {
+    modo = tipo;
+    nivel = 4;
+    score = 0;
+    historial = [];
+    testActivo = true;
+    intentoRepetido = false;
+    clearTimeout(timeoutId);
+
+    document.getElementById("historial").classList.add("hidden");
+    document.getElementById("scoreDisplay").classList.add("hidden");
+    document.getElementById("tablaHistorial").innerHTML = "";
+    document.getElementById("scoreDisplay").textContent = "";
+    document.getElementById("resultado").textContent = "";
+    document.getElementById("btnFinalizar").classList.remove("hidden");
+
+    nextLevel();
+  }
+
+  function nextLevel() {
+    if (!testActivo) return;
+
+    const btnEnviar = document.getElementById("btnEnviar");
+    btnEnviar.disabled = false;
+
+    let nuevaSecuencia;
+    do {
+      nuevaSecuencia = generarSecuencia(nivel);
+    } while (intentoRepetido && arraysIguales(nuevaSecuencia, currentSequence));
+
+    currentSequence = nuevaSecuencia;
+
+    document.getElementById("sequence").textContent = currentSequence.join(" ");
+    document.getElementById("sequence").classList.remove("hidden");
+    document.getElementById("inputArea").classList.add("hidden");
+    document.getElementById("respuesta").value = "";
+
+    const tiempoMostrar = nivel * 1000;
+
+    timeoutId = setTimeout(() => {
+      document.getElementById("sequence").classList.add("hidden");
+      document.getElementById("inputArea").classList.remove("hidden");
+      document.getElementById("instrucciones").textContent =
+        modo === "directo"
+          ? "Escribe los números en el mismo orden:"
+          : "Escribe los números en orden inverso:";
+      document.getElementById("respuesta").focus();
+    }, tiempoMostrar);
+  }
+
+  function checkAnswer() {
+    if (!testActivo) return;
+
+    const btnEnviar = document.getElementById("btnEnviar");
+    btnEnviar.disabled = true;
+
+    clearTimeout(timeoutId);
+
+    let input = document.getElementById("respuesta").value.trim();
+    input = input.replace(/\s+/g, '');
+    let respuestaUsuario = input.split('').map(Number);
+
+    let secuenciaCorrecta = modo === "directo" ? currentSequence : [...currentSequence].reverse();
+
+    let esCorrecto =
+      respuestaUsuario.length === secuenciaCorrecta.length &&
+      respuestaUsuario.every((num, i) => num === secuenciaCorrecta[i]);
+
+    historial.push({
+      nivel: nivel,
+      modo: modo,
+      generado: currentSequence.slice(),
+      respuesta: respuestaUsuario.slice(),
+      correcto: esCorrecto,
+    });
+
+    if (esCorrecto) {
+      score++;
+      document.getElementById("resultado").textContent = `✅ Correcto`;
+      intentoRepetido = false;
+      nivel++;
+    } else {
+      if (intentoRepetido) {
+        document.getElementById("resultado").textContent = `❌ Incorrecto nuevamente. Prueba finalizada.`;
+        finalizarTest();
+        return;
+      } else {
+        document.getElementById("resultado").textContent = `❌ Incorrecto. Se repetirá el nivel ${nivel}.`;
+        intentoRepetido = true;
+      }
+    }
+
+    if (testActivo) {
+      timeoutId = setTimeout(() => {
+        document.getElementById("resultado").textContent = "";
+        nextLevel();
+      }, 2000);
+    }
+  }
+
+  function finalizarTest() {
+    testActivo = false;
+    clearTimeout(timeoutId);
+    document.getElementById("sequence").classList.add("hidden");
+    document.getElementById("inputArea").classList.add("hidden");
+    document.getElementById("btnFinalizar").classList.add("hidden");
+
+    document.getElementById("scoreDisplay").textContent = `Puntaje final: ${score}`;
+    document.getElementById("scoreDisplay").classList.remove("hidden");
+    document.getElementById("historial").classList.remove("hidden");
+    actualizarHistorial();
+  }
+
+  function actualizarHistorial() {
+    let tabla = document.getElementById("tablaHistorial");
+    tabla.innerHTML = "";
+
+    historial.forEach((item) => {
+      let fila = document.createElement("tr");
+      fila.innerHTML = `
+        <td>${item.nivel}</td>
+        <td>${item.modo}</td>
+        <td>${item.generado.join(" ")}</td>
+        <td>${item.respuesta.join(" ")}</td>
+        <td>${item.correcto ? "✅" : "❌"}</td>
+      `;
+      tabla.appendChild(fila);
+    });
+  }
+
+  document.getElementById("respuesta").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (!document.getElementById("btnEnviar").disabled) {
+        checkAnswer();
+      }
+    }
+  });
+</script>
+</body>
+</html>
+>
   <style>
     body {
       font-family: Arial, sans-serif;
