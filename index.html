@@ -17,45 +17,80 @@
     <input type="text" id="respuesta" placeholder="Escribe la secuencia">
     <button onclick="checkAnswer()">Enviar</button>
   </div>  <p id="resultado"></p>  <script>
-    let currentSequence = [];
-    let modo = "directo";
+  let currentSequence = [];
+  let modo = "directo";
+  let nivel = 4;
+  let score = 0;
+  let historial = [];
 
-    function generarSecuencia(longitud) {
-      let seq = [];
-      for (let i = 0; i < longitud; i++) {
-        seq.push(Math.floor(Math.random() * 9) + 1);
-      }
-      return seq;
+  function generarSecuencia(longitud) {
+    let seq = [];
+    for (let i = 0; i < longitud; i++) {
+      seq.push(Math.floor(Math.random() * 9) + 1);
+    }
+    return seq;
+  }
+
+  function startTest(tipo) {
+    modo = tipo;
+    nivel = 4;
+    score = 0;
+    historial = [];
+    document.getElementById("resultado").textContent = "";
+    nextLevel();
+  }
+
+  function nextLevel() {
+    currentSequence = generarSecuencia(nivel);
+    document.getElementById("sequence").textContent = currentSequence.join(" ");
+    document.getElementById("sequence").classList.remove("hidden");
+    document.getElementById("inputArea").classList.add("hidden");
+    document.getElementById("respuesta").value = "";
+
+    let tiempoMostrar = nivel * 1000;
+
+    setTimeout(() => {
+      document.getElementById("sequence").classList.add("hidden");
+      document.getElementById("inputArea").classList.remove("hidden");
+      document.getElementById("instrucciones").textContent = (modo === "directo") ?
+        "Escribe los números en el mismo orden:" :
+        "Escribe los números en orden inverso:";
+    }, tiempoMostrar);
+  }
+
+  function checkAnswer() {
+    let input = document.getElementById("respuesta").value.trim();
+    input = input.replace(/\s+/g, '');
+    let respuestaUsuario = input.split('').map(Number);
+
+    let secuenciaCorrecta = (modo === "directo") ? currentSequence : [...currentSequence].reverse();
+
+    let esCorrecto = (
+      respuestaUsuario.length === secuenciaCorrecta.length &&
+      respuestaUsuario.every((num, i) => num === secuenciaCorrecta[i])
+    );
+
+    if (esCorrecto) {
+      score++;
     }
 
-    function startTest(tipo) {
-      modo = tipo;
-      currentSequence = generarSecuencia(4); // inicia con 4 números
-      document.getElementById("sequence").textContent = currentSequence.join(" ");
-      document.getElementById("sequence").classList.remove("hidden");
+    historial.push({
+      nivel: nivel,
+      generado: currentSequence,
+      respuesta: respuestaUsuario,
+      correcto: esCorrecto
+    });
+
+    document.getElementById("resultado").textContent = esCorrecto ?
+      `✅ Correcto (Puntaje: ${score})` :
+      `❌ Incorrecto. Era: ${secuenciaCorrecta.join(" ")} (Puntaje: ${score})`;
+
+    nivel++;
+    setTimeout(() => {
       document.getElementById("resultado").textContent = "";
-
-      setTimeout(() => {
-        document.getElementById("sequence").classList.add("hidden");
-        document.getElementById("inputArea").classList.remove("hidden");
-        document.getElementById("respuesta").value = "";
-        document.getElementById("instrucciones").textContent = (modo === "directo") ?
-          "Escribe los números en el mismo orden:" :
-          "Escribe los números en orden inverso:";
-      }, 2000);
-    }
-
-    function checkAnswer() {
-      let respuesta = document.getElementById("respuesta").value.trim().split("").map(Number);
-      let correcta = (modo === "directo") ? currentSequence : [...currentSequence].reverse();
-
-      if (JSON.stringify(respuesta) === JSON.stringify(correcta)) {
-        document.getElementById("resultado").textContent = "✅ Correcto";
-      } else {
-        document.getElementById("resultado").textContent = "❌ Incorrecto. La respuesta era: " + correcta.join("");
-      }
-
-      document.getElementById("inputArea").classList.add("hidden");
-    }
-  </script></body>
+      nextLevel();
+    }, 2000);
+  }
+</script>
+</body>
 </html>
