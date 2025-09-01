@@ -278,22 +278,25 @@
     const tiempoMostrar = nivel * 1000;
 
     timeoutId = setTimeout(() => {
-      document.getElementById("sequence").classList.add("hidden");
-
-      // iOS fix: Forzar repaint para ocultar correctamente el número
       const sequence = document.getElementById("sequence");
+    
+      // iOS Fix: ocultar completamente la secuencia
+      sequence.classList.add("hidden");
+      sequence.textContent = "";
       sequence.style.display = "none";
       void sequence.offsetHeight; // Trigger reflow
       sequence.style.display = "";
-
-      document.getElementById("inputArea").classList.remove("hidden");
+    
+      const inputArea = document.getElementById("inputArea");
+      inputArea.classList.remove("hidden");
+    
       document.getElementById("instrucciones").textContent =
         modo === "directo"
           ? "Escribe los números en el mismo orden:"
           : "Escribe los números en orden inverso:";
       document.getElementById("respuesta").focus();
     }, tiempoMostrar);
-  }
+
 
   function checkAnswer() {
     if (!testActivo) return;
