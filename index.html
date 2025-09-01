@@ -52,7 +52,7 @@
       if (JSON.stringify(respuesta) === JSON.stringify(correcta)) {
         document.getElementById("resultado").textContent = "✅ Correcto";
       } else {
-        document.getElementById("resultado").textContent = "❌ Incorrecto. La respuesta era: " + correcta.join(" ");
+        document.getElementById("resultado").textContent = "❌ Incorrecto. La respuesta era: " + correcta.join("");
       }
 
       document.getElementById("inputArea").classList.add("hidden");
