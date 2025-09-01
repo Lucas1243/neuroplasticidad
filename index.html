@@ -153,133 +153,97 @@
     return true;
   }
 
-  function startTest(tipo) {
-    modo = tipo;
-    nivel = 4;
-    score = 0;
-    historial = [];
-    testActivo = true;
+function startTest(tipo) {
+  modo = tipo;
+  nivel = 4;
+  score = 0;
+  historial = [];
+  testActivo = true;
+  intentoRepetido = false;
+  clearTimeout(timeoutId);
+
+  const scoreDisplay = document.getElementById("scoreDisplay");
+  const historialDiv = document.getElementById("historial");
+  const tablaHistorial = document.getElementById("tablaHistorial");
+
+  historialDiv.classList.add("hidden");
+  scoreDisplay.classList.add("hidden");
+  tablaHistorial.innerHTML = "";
+  scoreDisplay.textContent = "";
+  document.getElementById("resultado").textContent = "";
+  document.getElementById("btnFinalizar").classList.remove("hidden");
+
+  nextLevel();
+}
+
+function checkAnswer() {
+  if (!testActivo) return;
+
+  const btnEnviar = document.getElementById("btnEnviar");
+  btnEnviar.disabled = true;
+
+  clearTimeout(timeoutId);
+
+  let input = document.getElementById("respuesta").value.trim();
+  input = input.replace(/\s+/g, '');
+  let respuestaUsuario = input.split('').map(Number);
+
+  let secuenciaCorrecta = modo === "directo" ? currentSequence : [...currentSequence].reverse();
+
+  let esCorrecto = respuestaUsuario.length === secuenciaCorrecta.length &&
+                   respuestaUsuario.every((num, i) => num === secuenciaCorrecta[i]);
+
+  historial.push({
+    nivel: nivel,
+    modo: modo,
+    generado: currentSequence.slice(),
+    respuesta: respuestaUsuario.slice(),
+    correcto: esCorrecto,
+  });
+
+  if (esCorrecto) {
+    score++;
+    document.getElementById("resultado").textContent = `✅ Correcto (Puntaje: ${score})`;
     intentoRepetido = false;
-    clearTimeout(timeoutId);
-
-    document.getElementById("historial").classList.add("hidden");
-    document.getElementById("scoreDisplay").classList.add("hidden");
-    document.getElementById("tablaHistorial").innerHTML = "";
-    document.getElementById("scoreDisplay").textContent = "";
-    document.getElementById("resultado").textContent = "";
-    document.getElementById("btnFinalizar").classList.remove("hidden");
-
-    nextLevel();
-  }
-
-  function nextLevel() {
-    if (!testActivo) return;
-
-    // Reactivar botón enviar
-    const btnEnviar = document.getElementById("btnEnviar");
-    btnEnviar.disabled = false;
-
-    let nuevaSecuencia;
-    do {
-      nuevaSecuencia = generarSecuencia(nivel);
-    } while (intentoRepetido && arraysIguales(nuevaSecuencia, currentSequence));
-
-    currentSequence = nuevaSecuencia;
-
-    document.getElementById("sequence").textContent = currentSequence.join(" ");
-    document.getElementById("sequence").classList.remove("hidden");
-    document.getElementById("inputArea").classList.add("hidden");
-    document.getElementById("respuesta").value = "";
-
-    const tiempoMostrar = nivel * 1000;
-
-    timeoutId = setTimeout(() => {
-      document.getElementById("sequence").classList.add("hidden");
-      document.getElementById("inputArea").classList.remove("hidden");
-      document.getElementById("instrucciones").textContent =
-        modo === "directo"
-          ? "Escribe los números en el mismo orden:"
-          : "Escribe los números en orden inverso:";
-      document.getElementById("respuesta").focus();
-    }, tiempoMostrar);
-  }
-
-  function checkAnswer() {
-    if (!testActivo) return;
-
-    const btnEnviar = document.getElementById("btnEnviar");
-    // Deshabilitar botón para evitar múltiples envíos
-    btnEnviar.disabled = true;
-
-    clearTimeout(timeoutId);
-
-    let input = document.getElementById("respuesta").value.trim();
-    input = input.replace(/\s+/g, ''); // eliminar espacios internos
-    let respuestaUsuario = input.split('').map(Number);
-
-    let secuenciaCorrecta =
-      modo === "directo" ? currentSequence : [...currentSequence].reverse();
-
-    let esCorrecto =
-      respuestaUsuario.length === secuenciaCorrecta.length &&
-      respuestaUsuario.every((num, i) => num === secuenciaCorrecta[i]);
-
-    if (esCorrecto) {
-      score++;
-      historial.push({
-        nivel: nivel,
-        modo: modo,
-        generado: currentSequence.slice(),
-        respuesta: respuestaUsuario.slice(),
-        correcto: true,
-      });
-      document.getElementById("resultado").textContent = `✅ Correcto`;
-      intentoRepetido = false;
-      nivel++;
+    nivel++;
+  } else {
+    if (intentoRepetido) {
+      document.getElementById("resultado").textContent = `❌ Incorrecto nuevamente. Prueba finalizada. Puntaje final: ${score}`;
+      finalizarTest();
+      return;
     } else {
-      historial.push({
-        nivel: nivel,
-        modo: modo,
-        generado: currentSequence.slice(),
-        respuesta: respuestaUsuario.slice(),
-        correcto: false,
-      });
-
-      if (intentoRepetido) {
-        // Segundo intento fallido: finalizar test
-        document.getElementById("resultado").textContent = `❌ Incorrecto nuevamente. Prueba finalizada.`;
-        finalizarTest();
-        return;
-      } else {
-        // Primer fallo, repetir mismo nivel
-        document.getElementById("resultado").textContent = `❌ Incorrecto. Se repetirá el nivel ${nivel}.`;
-        intentoRepetido = true;
-      }
-    }
-
-    // NO mostrar puntaje ni historial aquí, solo almacenar datos
-
-    if (testActivo) {
-      timeoutId = setTimeout(() => {
-        document.getElementById("resultado").textContent = "";
-        nextLevel();
-      }, 2000);
+      document.getElementById("resultado").textContent = `❌ Incorrecto. Se repetirá el nivel ${nivel}.`;
+      intentoRepetido = true;
     }
   }
 
-  function finalizarTest() {
-    testActivo = false;
-    clearTimeout(timeoutId);
-    document.getElementById("sequence").classList.add("hidden");
-    document.getElementById("inputArea").classList.add("hidden");
-    document.getElementById("btnFinalizar").classList.add("hidden");
+  // Aquí NO llamar a actualizarHistorial
 
-    // Mostrar puntaje final y el historial al finalizar
-    document.getElementById("scoreDisplay").textContent = `Puntaje final: ${score}`;
-    document.getElementById("scoreDisplay").classList.remove("hidden");
-    document.getElementById("historial").classList.remove("hidden");
-    actualizarHistorial();
+  if (testActivo) {
+    timeoutId = setTimeout(() => {
+      document.getElementById("resultado").textContent = "";
+      nextLevel();
+    }, 2000);
   }
+}
+
+function finalizarTest() {
+  testActivo = false;
+  clearTimeout(timeoutId);
+  document.getElementById("sequence").classList.add("hidden");
+  document.getElementById("inputArea").classList.add("hidden");
+  document.getElementById("btnFinalizar").classList.add("hidden");
+
+  const scoreDisplay = document.getElementById("scoreDisplay");
+  const historialDiv = document.getElementById("historial");
+
+  scoreDisplay.textContent = `Puntaje final: ${score}`;
+  scoreDisplay.classList.remove("hidden");
+
+  actualizarHistorial(); // Actualiza la tabla con todo el historial
+  historialDiv.classList.remove("hidden");
+}
+
 
   function actualizarHistorial() {
     let tabla = document.getElementById("tablaHistorial");
