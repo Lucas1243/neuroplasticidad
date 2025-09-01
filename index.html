@@ -109,7 +109,7 @@
   </div>
 
   <p id="resultado"></p>
-  <p id="scoreDisplay"></p>
+  <p id="scoreDisplay" class="hidden"></p>
 
   <div id="historial" class="hidden">
     <h2>Historial</h2>
@@ -163,6 +163,7 @@
     clearTimeout(timeoutId);
 
     document.getElementById("historial").classList.add("hidden");
+    document.getElementById("scoreDisplay").classList.add("hidden");
     document.getElementById("tablaHistorial").innerHTML = "";
     document.getElementById("scoreDisplay").textContent = "";
     document.getElementById("resultado").textContent = "";
@@ -232,7 +233,7 @@
         respuesta: respuestaUsuario.slice(),
         correcto: true,
       });
-      document.getElementById("resultado").textContent = `✅ Correcto (Puntaje: ${score})`;
+      document.getElementById("resultado").textContent = `✅ Correcto`;
       intentoRepetido = false;
       nivel++;
     } else {
@@ -246,7 +247,7 @@
 
       if (intentoRepetido) {
         // Segundo intento fallido: finalizar test
-        document.getElementById("resultado").textContent = `❌ Incorrecto nuevamente. Prueba finalizada. Puntaje final: ${score}`;
+        document.getElementById("resultado").textContent = `❌ Incorrecto nuevamente. Prueba finalizada.`;
         finalizarTest();
         return;
       } else {
@@ -256,7 +257,7 @@
       }
     }
 
-    actualizarHistorial();
+    // NO mostrar puntaje ni historial aquí, solo almacenar datos
 
     if (testActivo) {
       timeoutId = setTimeout(() => {
@@ -272,14 +273,15 @@
     document.getElementById("sequence").classList.add("hidden");
     document.getElementById("inputArea").classList.add("hidden");
     document.getElementById("btnFinalizar").classList.add("hidden");
+
+    // Mostrar puntaje final y el historial al finalizar
     document.getElementById("scoreDisplay").textContent = `Puntaje final: ${score}`;
+    document.getElementById("scoreDisplay").classList.remove("hidden");
     document.getElementById("historial").classList.remove("hidden");
+    actualizarHistorial();
   }
 
   function actualizarHistorial() {
-    document.getElementById("scoreDisplay").textContent = `Puntaje actual: ${score}`;
-    document.getElementById("historial").classList.remove("hidden");
-
     let tabla = document.getElementById("tablaHistorial");
     tabla.innerHTML = "";
 
@@ -295,6 +297,16 @@
       tabla.appendChild(fila);
     });
   }
+
+  // Prevenir envío múltiple con Enter
+  document.getElementById("respuesta").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (!document.getElementById("btnEnviar").disabled) {
+        checkAnswer();
+      }
+    }
+  });
 </script>
 
 </body>
