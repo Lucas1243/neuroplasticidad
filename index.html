@@ -87,8 +87,13 @@
 function nextLevel() {
   if (!testActivo) return;
 
-  // Siempre generar nueva secuencia, incluso en intento repetido
-  currentSequence = generarSecuencia(nivel);
+  let nuevaSecuencia;
+
+  do {
+    nuevaSecuencia = generarSecuencia(nivel);
+  } while (intentoRepetido && arraysIguales(nuevaSecuencia, currentSequence));
+
+  currentSequence = nuevaSecuencia;
 
   document.getElementById("sequence").textContent = currentSequence.join(" ");
   document.getElementById("sequence").classList.remove("hidden");
@@ -106,6 +111,15 @@ function nextLevel() {
         : "Escribe los números en orden inverso:";
     document.getElementById("respuesta").focus();
   }, tiempoMostrar);
+}
+
+// Función para comparar dos arrays (secuencias)
+function arraysIguales(a, b) {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return false;
+  }
+  return true;
 }
 
   function checkAnswer() {
