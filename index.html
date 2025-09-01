@@ -2,20 +2,96 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Test de Dígitos</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; padding: 40px; }
-    #sequence { font-size: 2em; margin: 20px; font-weight: bold; }
-    input, button { padding: 10px; font-size: 1em; margin: 10px; }
-    .hidden { display: none; }
-    #historial { max-width: 700px; margin: 30px auto; text-align: left; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    th { background-color: #f2f2f2; }
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+    h1 {
+      font-size: 1.8em;
+      margin-bottom: 20px;
+    }
+    #sequence {
+      font-size: 2.5em;
+      margin: 20px 0;
+      font-weight: bold;
+      word-wrap: break-word;
+    }
+    input, button {
+      padding: 15px;
+      font-size: 1.2em;
+      margin: 10px 0;
+      width: 90%;
+      max-width: 400px;
+      box-sizing: border-box;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .hidden {
+      display: none;
+    }
+    #historial {
+      max-width: 700px;
+      margin: 30px auto;
+      text-align: left;
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      min-width: 400px; /* para que sea scrollable si es pequeño */
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+      font-size: 0.9em;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+
+    /* Media Query para pantallas pequeñas */
+    @media (max-width: 480px) {
+      body {
+        padding: 10px;
+      }
+      h1 {
+        font-size: 1.5em;
+      }
+      #sequence {
+        font-size: 2em;
+      }
+      input, button {
+        font-size: 1em;
+        padding: 12px;
+        width: 100%;
+      }
+      th, td {
+        font-size: 0.8em;
+        padding: 6px;
+      }
+    }
   </style>
 </head>
+
 <body>
-  <h1>Test de Dígitos (Digit Span)</h1>
+  <h1>Test de Dígitos (Digit Span)</h1>  
 
   <button onclick="startTest('directo')">Comenzar Dígitos Directo</button>
   <button onclick="startTest('inverso')">Comenzar Dígitos Inverso</button>
