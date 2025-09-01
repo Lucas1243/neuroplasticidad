@@ -84,30 +84,29 @@
     nextLevel();
   }
 
-  function nextLevel() {
-    if (!testActivo) return;
+function nextLevel() {
+  if (!testActivo) return;
 
-    // Generamos secuencia solo si NO estamos repitiendo nivel
-    if (!intentoRepetido) {
-      currentSequence = generarSecuencia(nivel);
-    }
-    document.getElementById("sequence").textContent = currentSequence.join(" ");
-    document.getElementById("sequence").classList.remove("hidden");
-    document.getElementById("inputArea").classList.add("hidden");
-    document.getElementById("respuesta").value = "";
+  // Siempre generar nueva secuencia, incluso en intento repetido
+  currentSequence = generarSecuencia(nivel);
 
-    const tiempoMostrar = nivel * 1000;
+  document.getElementById("sequence").textContent = currentSequence.join(" ");
+  document.getElementById("sequence").classList.remove("hidden");
+  document.getElementById("inputArea").classList.add("hidden");
+  document.getElementById("respuesta").value = "";
 
-    timeoutId = setTimeout(() => {
-      document.getElementById("sequence").classList.add("hidden");
-      document.getElementById("inputArea").classList.remove("hidden");
-      document.getElementById("instrucciones").textContent =
-        modo === "directo"
-          ? "Escribe los números en el mismo orden:"
-          : "Escribe los números en orden inverso:";
-      document.getElementById("respuesta").focus();
-    }, tiempoMostrar);
-  }
+  const tiempoMostrar = nivel * 1000;
+
+  timeoutId = setTimeout(() => {
+    document.getElementById("sequence").classList.add("hidden");
+    document.getElementById("inputArea").classList.remove("hidden");
+    document.getElementById("instrucciones").textContent =
+      modo === "directo"
+        ? "Escribe los números en el mismo orden:"
+        : "Escribe los números en orden inverso:";
+    document.getElementById("respuesta").focus();
+  }, tiempoMostrar);
+}
 
   function checkAnswer() {
     if (!testActivo) return;
