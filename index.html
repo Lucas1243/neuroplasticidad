@@ -56,6 +56,7 @@
   let historial = [];
   let testActivo = false;
   let timeoutId = null;
+  let intentoRepetido = false; // para saber si estamos en el segundo intento del mismo nivel
 
   function generarSecuencia(longitud) {
     let seq = [];
@@ -71,6 +72,7 @@
     score = 0;
     historial = [];
     testActivo = true;
+    intentoRepetido = false;
     clearTimeout(timeoutId);
 
     document.getElementById("historial").classList.add("hidden");
@@ -85,7 +87,10 @@
   function nextLevel() {
     if (!testActivo) return;
 
-    currentSequence = generarSecuencia(nivel);
+    // Generamos secuencia solo si NO estamos repitiendo nivel
+    if (!intentoRepetido) {
+      currentSequence = generarSecuencia(nivel);
+    }
     document.getElementById("sequence").textContent = currentSequence.join(" ");
     document.getElementById("sequence").classList.remove("hidden");
     document.getElementById("inputArea").classList.add("hidden");
@@ -120,29 +125,48 @@
       respuestaUsuario.length === secuenciaCorrecta.length &&
       respuestaUsuario.every((num, i) => num === secuenciaCorrecta[i]);
 
-    if (esCorrecto) score++;
+    if (esCorrecto) {
+      score++;
+      historial.push({
+        nivel: nivel,
+        modo: modo,
+        generado: currentSequence.slice(),
+        respuesta: respuestaUsuario.slice(),
+        correcto: true,
+      });
+      document.getElementById("resultado").textContent = `✅ Correcto (Puntaje: ${score})`;
+      intentoRepetido = false;
+      nivel++;
+    } else {
+      historial.push({
+        nivel: nivel,
+        modo: modo,
+        generado: currentSequence.slice(),
+        respuesta: respuestaUsuario.slice(),
+        correcto: false,
+      });
 
-    historial.push({
-      nivel: nivel,
-      modo: modo,
-      generado: currentSequence.slice(),
-      respuesta: respuestaUsuario.slice(),
-      correcto: esCorrecto,
-    });
-
-    document.getElementById("resultado").textContent = esCorrecto
-      ? `✅ Correcto (Puntaje: ${score})`
-      : `❌ Incorrecto. Era: ${secuenciaCorrecta.join(" ")} (Puntaje: ${score})`;
+      if (intentoRepetido) {
+        // Segundo intento fallido: finalizar test
+        document.getElementById("resultado").textContent = `❌ Incorrecto nuevamente. Prueba finalizada. Puntaje final: ${score}`;
+        finalizarTest();
+        return;
+      } else {
+        // Primer fallo, repetir mismo nivel
+        document.getElementById("resultado").textContent = `❌ Incorrecto. Se repetirá el nivel ${nivel}.`;
+        intentoRepetido = true;
+      }
+    }
 
     actualizarHistorial();
-    nivel++;
 
-    timeoutId = setTimeout(() => {
-      if (testActivo) {
+    // Si el test no se finalizó en el bloque anterior
+    if (testActivo) {
+      timeoutId = setTimeout(() => {
         document.getElementById("resultado").textContent = "";
         nextLevel();
-      }
-    }, 2000);
+      }, 2000);
+    }
   }
 
   function finalizarTest() {
@@ -150,10 +174,9 @@
     clearTimeout(timeoutId);
     document.getElementById("sequence").classList.add("hidden");
     document.getElementById("inputArea").classList.add("hidden");
-    document.getElementById("resultado").textContent = `✅ Test finalizado. Puntaje final: ${score}`;
+    document.getElementById("btnFinalizar").classList.add("hidden");
     document.getElementById("scoreDisplay").textContent = `Puntaje final: ${score}`;
     document.getElementById("historial").classList.remove("hidden");
-    document.getElementById("btnFinalizar").classList.add("hidden");
   }
 
   function actualizarHistorial() {
@@ -161,8 +184,6 @@
     document.getElementById("historial").classList.remove("hidden");
 
     let tabla = document.getElementById("tablaHistorial");
-
-    // Limpiamos para evitar duplicados
     tabla.innerHTML = "";
 
     historial.forEach((item) => {
