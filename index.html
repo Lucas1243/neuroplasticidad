@@ -44,6 +44,8 @@
       <tbody id="tablaHistorial"></tbody>
     </table>
   </div>
+<button id="btnFinalizar" class="hidden" onclick="finalizarTest()">Finalizar Test</button>
+
 
   <script>
     let currentSequence = [];
@@ -69,7 +71,9 @@
       document.getElementById("tablaHistorial").innerHTML = "";
       document.getElementById("scoreDisplay").textContent = "";
       document.getElementById("resultado").textContent = "";
+      document.getElementById("btnFinalizar").classList.remove("hidden");
       nextLevel();
+     
     }
 
     function nextLevel() {
@@ -140,6 +144,23 @@
       `;
       tabla.appendChild(fila);
     }
+    function finalizarTest() {
+  document.getElementById("sequence").classList.add("hidden");
+  document.getElementById("inputArea").classList.add("hidden");
+  document.getElementById("resultado").textContent = `✅ Test finalizado. Puntaje final: ${score}`;
+  document.getElementById("scoreDisplay").textContent = `Puntaje final: ${score}`;
+  document.getElementById("historial").classList.remove("hidden");
+  document.getElementById("btnFinalizar").classList.add("hidden");
+
+  // Evitar que continúe a otro nivel
+  nivel = Infinity;
+}
+function nextLevel() {
+  if (nivel === Infinity) return; // evita continuar si el test fue finalizado
+
+  currentSequence = generarSecuencia(nivel);
+  ...
+
   </script>
 </body>
 </html>
