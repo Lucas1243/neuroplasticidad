@@ -63,7 +63,7 @@
     }
 
     function startTest(tipo) {
-      modo = tipo;
+      modo = tipo; // <-- Esto debe estar al principio
       nivel = 4;
       score = 0;
       historial = [];
@@ -73,7 +73,6 @@
       document.getElementById("resultado").textContent = "";
       document.getElementById("btnFinalizar").classList.remove("hidden");
       nextLevel();
-     
     }
 
     function nextLevel() {
@@ -94,34 +93,37 @@
       }, tiempoMostrar);
     }
 
-    function checkAnswer() {
+      function checkAnswer() {
       let input = document.getElementById("respuesta").value.trim();
       input = input.replace(/\s+/g, '');
       let respuestaUsuario = input.split('').map(Number);
-
-      let secuenciaCorrecta = (modo === "directo") ? currentSequence : [...currentSequence].reverse();
-
+    
+      // CORRECTA según el modo
+      let secuenciaCorrecta = (modo === "directo")
+        ? currentSequence
+        : [...currentSequence].reverse();
+    
       let esCorrecto = (
         respuestaUsuario.length === secuenciaCorrecta.length &&
         respuestaUsuario.every((num, i) => num === secuenciaCorrecta[i])
       );
-
+    
       if (esCorrecto) score++;
-
+    
       historial.push({
         nivel: nivel,
         generado: currentSequence.slice(),
         respuesta: respuestaUsuario.slice(),
         correcto: esCorrecto
       });
-
-      document.getElementById("resultado").textContent = esCorrecto ?
-        `✅ Correcto (Puntaje: ${score})` :
-        `❌ Incorrecto. Era: ${secuenciaCorrecta.join(" ")} (Puntaje: ${score})`;
-
+    
+      document.getElementById("resultado").textContent = esCorrecto
+        ? `✅ Correcto (Puntaje: ${score})`
+        : `❌ Incorrecto. Era: ${secuenciaCorrecta.join(" ")} (Puntaje: ${score})`;
+    
       actualizarHistorial();
       nivel++;
-
+    
       setTimeout(() => {
         document.getElementById("resultado").textContent = "";
         nextLevel();
