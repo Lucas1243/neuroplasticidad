@@ -38,7 +38,11 @@
       border: none;
       transition: background-color 0.3s ease;
     }
-    button:hover {
+    button:disabled {
+      background-color: #888;
+      cursor: not-allowed;
+    }
+    button:hover:enabled {
       background-color: #0056b3;
     }
     .hidden {
@@ -67,33 +71,30 @@
     }
 
     /* Media Query para pantallas pequeñas */
-@media (max-width: 480px) {
-  body {
-    padding: 15px;
-  }
-  h1 {
-    font-size: 2em;
-  }
-  #sequence {
-    font-size: 2.8em;
-  }
-  input, button {
-    font-size: 1.4em;
-    padding: 18px;
-    width: 100%;
-  }
-  th, td {
-    font-size: 1em;
-    padding: 10px;
-  }
-}
-
+    @media (max-width: 480px) {
+      body {
+        padding: 15px;
+      }
+      h1 {
+        font-size: 2em;
+      }
+      #sequence {
+        font-size: 2.8em;
+      }
+      input, button {
+        font-size: 1.4em;
+        padding: 18px;
+        width: 100%;
+      }
+      th, td {
+        font-size: 1em;
+        padding: 10px;
+      }
     }
   </style>
 </head>
-
 <body>
-  <h1>Test de Dígitos (Digit Span)</h1>  
+  <h1>Test de Dígitos (Digit Span)</h1>
 
   <button onclick="startTest('directo')">Comenzar Dígitos Directo</button>
   <button onclick="startTest('inverso')">Comenzar Dígitos Inverso</button>
@@ -104,7 +105,7 @@
   <div id="inputArea" class="hidden">
     <p id="instrucciones"></p>
     <input type="text" id="respuesta" placeholder="Escribe la secuencia" autocomplete="off" />
-    <button onclick="checkAnswer()">Enviar</button>
+    <button id="btnEnviar" onclick="checkAnswer()">Enviar</button>
   </div>
 
   <p id="resultado"></p>
@@ -144,6 +145,14 @@
     return seq;
   }
 
+  function arraysIguales(a, b) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (a[i] !== b[i]) return false;
+    }
+    return true;
+  }
+
   function startTest(tipo) {
     modo = tipo;
     nivel = 4;
@@ -162,46 +171,44 @@
     nextLevel();
   }
 
-function nextLevel() {
-  if (!testActivo) return;
+  function nextLevel() {
+    if (!testActivo) return;
 
-  let nuevaSecuencia;
+    // Reactivar botón enviar
+    const btnEnviar = document.getElementById("btnEnviar");
+    btnEnviar.disabled = false;
 
-  do {
-    nuevaSecuencia = generarSecuencia(nivel);
-  } while (intentoRepetido && arraysIguales(nuevaSecuencia, currentSequence));
+    let nuevaSecuencia;
+    do {
+      nuevaSecuencia = generarSecuencia(nivel);
+    } while (intentoRepetido && arraysIguales(nuevaSecuencia, currentSequence));
 
-  currentSequence = nuevaSecuencia;
+    currentSequence = nuevaSecuencia;
 
-  document.getElementById("sequence").textContent = currentSequence.join(" ");
-  document.getElementById("sequence").classList.remove("hidden");
-  document.getElementById("inputArea").classList.add("hidden");
-  document.getElementById("respuesta").value = "";
+    document.getElementById("sequence").textContent = currentSequence.join(" ");
+    document.getElementById("sequence").classList.remove("hidden");
+    document.getElementById("inputArea").classList.add("hidden");
+    document.getElementById("respuesta").value = "";
 
-  const tiempoMostrar = nivel * 1000;
+    const tiempoMostrar = nivel * 1000;
 
-  timeoutId = setTimeout(() => {
-    document.getElementById("sequence").classList.add("hidden");
-    document.getElementById("inputArea").classList.remove("hidden");
-    document.getElementById("instrucciones").textContent =
-      modo === "directo"
-        ? "Escribe los números en el mismo orden:"
-        : "Escribe los números en orden inverso:";
-    document.getElementById("respuesta").focus();
-  }, tiempoMostrar);
-}
-
-// Función para comparar dos arrays (secuencias)
-function arraysIguales(a, b) {
-  if (a.length !== b.length) return false;
-  for (let i = 0; i < a.length; i++) {
-    if (a[i] !== b[i]) return false;
+    timeoutId = setTimeout(() => {
+      document.getElementById("sequence").classList.add("hidden");
+      document.getElementById("inputArea").classList.remove("hidden");
+      document.getElementById("instrucciones").textContent =
+        modo === "directo"
+          ? "Escribe los números en el mismo orden:"
+          : "Escribe los números en orden inverso:";
+      document.getElementById("respuesta").focus();
+    }, tiempoMostrar);
   }
-  return true;
-}
 
   function checkAnswer() {
     if (!testActivo) return;
+
+    const btnEnviar = document.getElementById("btnEnviar");
+    // Deshabilitar botón para evitar múltiples envíos
+    btnEnviar.disabled = true;
 
     clearTimeout(timeoutId);
 
@@ -251,7 +258,6 @@ function arraysIguales(a, b) {
 
     actualizarHistorial();
 
-    // Si el test no se finalizó en el bloque anterior
     if (testActivo) {
       timeoutId = setTimeout(() => {
         document.getElementById("resultado").textContent = "";
